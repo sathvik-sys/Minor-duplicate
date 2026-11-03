@@ -2,9 +2,9 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/frontend/index.html" },
-    { "source": "/style.css", "destination": "/frontend/style.css" },
-    { "source": "/script.js", "destination": "/frontend/script.js" },
-    { "source": "/(.*)", "destination": "/frontend/$1" }
+    { "source": "/frontend/index.html", "destination": "/index.html" },
+    { "source": "/frontend/style.css", "destination": "/style.css" },
+    { "source": "/frontend/script.js", "destination": "/script.js" },
+    { "source": "/frontend/(.*)", "destination": "/$1" }
   ]
 }
