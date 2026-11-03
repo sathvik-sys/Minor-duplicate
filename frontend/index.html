@@ -1,497 +1,616 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TraffIQ</title>
+    <title>TraffIQ - Smart Traffic & Emergency Management (Mysuru, Karnataka)</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Leaflet Map CSS (OpenStreetMap, No API Key Required) -->
+    <!-- Leaflet Map CSS (OpenStreetMap, Free & Zero API Keys Required) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo">🚦 TraffIQ</div>
+    <!-- 1. Emergency Ambulance Siren & Strobe Banner (Auto drops down on active alert) -->
+    <div id="emergencySirenBanner" role="alert" aria-live="assertive">
+        <div class="siren-banner-content">
+            <div class="siren-badge-group">
+                <span class="siren-beacon-icon">🚨</span>
+                <div class="siren-text-col">
+                    <h3>
+                        <span>CRITICAL EMERGENCY CORRIDOR: AMBULANCE IN TRANSIT</span>
+                        <span id="bannerAmbulanceId" class="status-badge-active">AMB-108</span>
+                    </h3>
+                    <p id="bannerAmbulanceDetails">
+                        En route to K.R. Hospital via Sayyaji Rao Road. <strong>⚠️ ALL DRIVERS: PLEASE PULL OVER &amp; GIVE WAY SAFELY!</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="siren-actions-group">
+                <button type="button" class="siren-btn siren-btn-track" onclick="focusOnActiveAmbulance()">
+                    📍 View on Map
+                </button>
+                <button type="button" id="sirenSoundToggleBtn" class="siren-btn siren-btn-mute" onclick="toggleAmbulanceSirenSound()">
+                    🔊 Mute Siren
+                </button>
+                <button type="button" id="sirenDeactivateBannerBtn" class="siren-btn siren-btn-deactivate" onclick="deactivateActiveAmbulance()">
+                    🛑 Clear Corridor
+                </button>
+            </div>
+        </div>
+    </div>
 
-        <div class="nav-links">
-            <a href="#">Home</a>
-            <a href="#map-section">Map</a>
-            <a href="#route-section">Routes</a>
-            <a href="#alerts-section">Alerts</a>
-            <button onclick="login()">Login</button>
+    <!-- 2. Navigation Bar with Role Switcher & City Indicator -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand-wrapper">
+                <div class="logo-icon">🚦</div>
+                <div class="brand-title-group">
+                    <h1>
+                        TraffIQ
+                        <span class="brand-badge-city">Mysuru, KA</span>
+                    </h1>
+                    <span class="brand-subtitle">Smart Traffic Intelligence &amp; Emergency Response</span>
+                </div>
+            </div>
+
+            <div class="nav-links">
+                <a href="#map-section">🗺️ Mysore Map</a>
+                <a href="#route-planner-section">🛣️ Find Route</a>
+                <a href="#ambulance-section">🚑 Ambulance Alerts</a>
+                <a href="#police-section">👮 Police Checkpoints</a>
+                <a href="#reports-section">📢 Reports</a>
+            </div>
+
+            <!-- Role Selector & Quick Action Toolbar -->
+            <div class="nav-quick-actions">
+                <div class="role-switcher-container" title="Switch user role for testing role-based features">
+                    <span class="role-label">Role:</span>
+                    <select id="userRoleSelect" class="role-select" onchange="onRoleChange(this.value)">
+                        <option value="user">👤 Citizen / Commuter</option>
+                        <option value="ambulance_operator">🚑 Ambulance Operator</option>
+                        <option value="police">👮 Traffic Police</option>
+                        <option value="admin">🛡️ City Admin</option>
+                    </select>
+                </div>
+
+                <button type="button" id="quickDispatchAmbulanceBtn" class="btn-nav-emergency" onclick="openAmbulanceDispatchModal()" title="Authorized: Dispatch Emergency Ambulance">
+                    🚨 Dispatch 108
+                </button>
+                <button type="button" id="quickReportPoliceBtn" class="btn-nav-police" onclick="openPoliceCheckpointModal()" title="Authorized: Report Police Checkpoint">
+                    👮 Checkpoint
+                </button>
+                <button type="button" id="navAuthBtn" class="btn-nav-login" onclick="toggleAuthModal()">
+                    Login
+                </button>
+            </div>
         </div>
     </nav>
 
+    <!-- 3. Key Metrics & Live City Status Strip -->
     <header>
-        <h1>Predict. Navigate. Arrive Smarter.</h1>
-        <p>Intelligent traffic prediction and smart route recommendation</p>
+        <div class="hero-stats-strip">
+            <div class="hero-stat-card">
+                <div class="hero-stat-icon icon-ambulance">🚑</div>
+                <div class="hero-stat-info">
+                    <h4>Ambulance Corridors</h4>
+                    <div class="stat-number" id="statAmbulanceCount">1 Active</div>
+                    <span class="stat-sub" id="statAmbulanceSub">Siren broadcasting live</span>
+                </div>
+            </div>
+
+            <div class="hero-stat-card">
+                <div class="hero-stat-icon icon-police">👮</div>
+                <div class="hero-stat-info">
+                    <h4>Police Checkpoints</h4>
+                    <div class="stat-number" id="statPoliceCount">3 Active</div>
+                    <span class="stat-sub">Helmet, Speed &amp; Security</span>
+                </div>
+            </div>
+
+            <div class="hero-stat-card">
+                <div class="hero-stat-icon icon-routes">🛣️</div>
+                <div class="hero-stat-info">
+                    <h4>Monitored Mysuru Roads</h4>
+                    <div class="stat-number" id="statRoadsCount">12 Arteries</div>
+                    <span class="stat-sub">ORR, Sayyaji Rao, JLB, KRS</span>
+                </div>
+            </div>
+
+            <div class="hero-stat-card">
+                <div class="hero-stat-icon icon-traffic">🚦</div>
+                <div class="hero-stat-info">
+                    <h4>City Traffic Status</h4>
+                    <div class="stat-number" id="statTrafficLevel" style="color: #fbbf24;">Moderate</div>
+                    <span class="stat-sub">Average speed: 32 km/h</span>
+                </div>
+            </div>
+        </div>
     </header>
 
+    <!-- 4. Main Two-Column Application Layout -->
     <main>
-
-        <!-- Find Route -->
-        <section class="search-box">
-            <h2>Find Your Route</h2>
-
-            <label for="startLocation">Starting Location</label>
-            <input type="text" id="startLocation"
-                   placeholder="Enter starting location">
-
-            <button type="button" onclick="getCurrentLocation()">
-                📍 Use My Current Location
-            </button>
-
-            <label for="destination">Destination</label>
-            <input type="text" id="destination"
-                   placeholder="Enter destination">
-
-            <button type="button" onclick="findRoute()">Find Route</button>
-        </section>
-
-        <!-- Traffic Prediction -->
-        <section class="prediction-section">
-            <h2>Traffic Prediction</h2>
-
-            <div class="prediction-card">
-                <div class="prediction-info">
-                    <h3>Current Road</h3>
-                    <p id="currentRoad">Main Road</p>
-                </div>
-
-                <div class="prediction-info">
-                    <h3>Predicted Traffic</h3>
-                    <p id="predictedTraffic" class="moderate-text">
-                        🟡 Moderate
-                    </p>
-                </div>
-
-                <div class="prediction-info">
-                    <h3>Estimated Speed</h3>
-                    <p id="estimatedSpeed">15 km/h</p>
-                </div>
-            </div>
-            <button type="button" onclick="predictTraffic()">
-    🤖 Predict Traffic with AI
-</button>
-
-<p id="mlPredictionMessage" aria-live="polite"></p>
-<p id="mlPredictionTime"></p>
-<p id="mlPredictionNote">
-    Note: Predictions currently use demo traffic inputs, not live traffic data.
-</p>
-        </section>
-
-        <!-- Traffic Status Legend -->
-        <section class="traffic-section">
-            <h2>Traffic Status</h2>
-
-            <div class="traffic-status">
-                <div class="status low">
-                    🟢 <span>Low Traffic</span>
-                </div>
-
-                <div class="status moderate">
-                    🟡 <span>Moderate Traffic</span>
-                </div>
-
-                <div class="status high">
-                    🔴 <span>High Traffic</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Routes Loaded from MySQL -->
-        <section class="route-section" id="route-section">
-            <h2>Smart Route Recommendation</h2>
-
-            <p class="route-description">
-                Compare available routes based on distance,
-                traffic information, and estimated travel time.
-            </p>
-
-            <div id="routes-container" aria-live="polite">
-                <p>Loading route recommendations...</p>
-            </div>
-        </section>
-
-        <!-- Interactive Traffic Map (Leaflet + OpenStreetMap) -->
-        <section class="map-section" id="map-section">
-            <div class="map-header-row">
-                <div>
-                    <h2>🚦 Traffic &amp; Route Map</h2>
-                    <p class="map-description">
-                        Interactive OpenStreetMap powered by Leaflet. Real-time road locations, live routes, markers, and traffic alerts.
-                    </p>
-                </div>
-                <div class="map-action-buttons">
-                    <button type="button" class="map-btn map-btn-outline" onclick="resetMapView()" title="Reset and fit all visible routes">
-                        🔄 Fit Routes
-                    </button>
-                    <button type="button" class="map-btn map-btn-primary" onclick="locateUserOnMap()" title="Locate my position on the map">
-                        📍 Center On Me
-                    </button>
-                </div>
-            </div>
-
-            <!-- Layer Control Toolbar -->
-            <div class="map-toolbar">
-                <span class="toolbar-title">Filter Map:</span>
-                <div class="map-pills">
-                    <button type="button" class="map-pill active" id="pill-all" onclick="toggleMapFilter('all')">
-                        🌐 All Layers
-                    </button>
-                    <button type="button" class="map-pill" id="pill-routes" onclick="toggleMapFilter('routes')">
-                        🛣️ Routes
-                    </button>
-                    <button type="button" class="map-pill" id="pill-alerts" onclick="toggleMapFilter('alerts')">
-                        ⚠️ Traffic Alerts
-                    </button>
-                    <button type="button" class="map-pill" id="pill-emergency" onclick="toggleMapFilter('emergency')">
-                        🚑 Emergency
-                    </button>
-                    <button type="button" class="map-pill" id="pill-roads" onclick="toggleMapFilter('roads')">
-                        📍 Road Markers
-                    </button>
-                </div>
-            </div>
-
-            <!-- Leaflet Map Container -->
-            <div class="map-wrapper">
-                <div id="map"></div>
-                <div id="map-loading" class="map-loading-indicator" style="display: none;">
-                    <span>Loading map data...</span>
-                </div>
-            </div>
-
-            <!-- Map Legend -->
-            <div class="map-legend">
-                <div class="legend-group">
-                    <span class="legend-badge legend-low">🟢 Low Traffic</span>
-                    <span class="legend-badge legend-moderate">🟡 Moderate Traffic</span>
-                    <span class="legend-badge legend-high">🔴 High Traffic</span>
-                    <span class="legend-badge legend-incident">🚧 Road Work / Incident</span>
-                    <span class="legend-badge legend-emergency">🚑 Emergency Alert</span>
-                </div>
-                <div class="legend-hint">
-                    💡 Click roads, routes, or markers for details. Click anywhere on the map to set Start or Destination!
-                </div>
-            </div>
-
-            <!-- Active Selected Route Banner -->
-            <div id="selectedRouteBanner" class="selected-route-banner" style="display: none;">
-                <div class="route-banner-info">
-                    <strong id="bannerRouteTitle">Route Information</strong>
-                    <p id="bannerRouteDetails"></p>
-                </div>
-                <button type="button" class="banner-close-btn" onclick="clearSelectedRoute()" title="Close banner">✕</button>
-            </div>
-        </section>
-
-        <!-- Traffic and Road Alerts -->
-        <section class="alerts-section" id="alerts-section">
-            <h2>Traffic &amp; Road Alerts</h2>
-            <div id="alerts-container" aria-live="polite">
-    <p>Loading traffic alerts...</p>
-</div>
-
-            <p class="alerts-description">
-                Important traffic and road information for your selected route.
-            </p>
-
-            <div class="alert-card traffic-alert">
-                <div class="alert-icon">🚗</div>
-
-                <div class="alert-content">
-                    <h3>Heavy Traffic</h3>
-                    <p>Heavy traffic is predicted on Main Road.</p>
-                    <span>Demo information</span>
-                </div>
-            </div>
-
-            <div class="alert-card road-alert">
-                <div class="alert-icon">🚧</div>
-
-                <div class="alert-content">
-                    <h3>Road Work</h3>
-                    <p>Road construction may cause delays in this area.</p>
-                    <span>Demo information</span>
-                </div>
-            </div>
-
-            <div class="alert-card emergency-alert">
-                <div class="alert-icon">🚑</div>
-
-                <div class="alert-content">
-                    <h3>Emergency Vehicle Awareness</h3>
-                    <div id="emergency-alerts-container" aria-live="polite">
-    <p>Loading emergency alerts...</p>
-</div>
-                    <p>
-                        Please follow traffic rules and allow safe passage
-                        to emergency vehicles.
-                    </p>
-                    <span>Safety notification</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- User Traffic Report -->
-        <section class="report-section">
-            <h2>Report Traffic Condition</h2>
-
-            <p class="report-description">
-                Help other users by reporting the current road condition.
-            </p>
-
-            <label for="reportRoad">Road Name</label>
-            <label for="reportRoad">Road Name</label>
-
-<input
-    type="text"
-    id="reportRoad"
-    list="availableRoads"
-    placeholder="Select or enter a road name"
-    maxlength="100"
-    required
->
-
-<datalist id="availableRoads">
-</datalist>
-            <label for="reportCondition">Traffic Condition</label>
-            <select id="reportCondition">
-                <option value="">Select condition</option>
-                <option value="Low">Low Traffic</option>
-                <option value="Moderate">Moderate Traffic</option>
-                <option value="Heavy">Heavy Traffic</option>
-                <option value="Accident">Accident / Incident</option>
-                <option value="Road Block">Road Blockage</option>
-            </select>
+        <!-- LEFT COLUMN: Trip Planner, Route Summary & Local Intelligence -->
+        <div class="sidebar-col">
             
-<h3>Community Reports</h3>
-<div id="reports-container" aria-live="polite">
-    <p>Loading community reports...</p>
-</div>
+            <!-- Mysore Focused Route Finder (Manual Typing & Autocomplete) -->
+            <section class="search-box" id="route-planner-section">
+                <h2><span>🔍</span> Find Your Route in Mysuru</h2>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">
+                    Type any Mysore starting point &amp; destination manually, pick from popular landmarks, or click on the map.
+                </p>
 
+                <div class="search-field-group">
+                    <label for="startLocation">
+                        <span>Starting Location</span>
+                        <button type="button" class="search-quick-btn" onclick="getCurrentLocation()">
+                            📍 Use My GPS
+                        </button>
+                    </label>
+                    <div class="search-input-wrapper">
+                        <span class="search-input-icon">🚩</span>
+                        <input type="text" id="startLocation" list="mysoreLandmarks" placeholder="e.g. Mysore Palace, Kuvempunagar, Hebbal..." autocomplete="off">
+                    </div>
+                </div>
 
-            <label for="reportDescription">Description</label>
-            <textarea id="reportDescription"
-                      placeholder="Describe the road condition..."></textarea>
+                <div class="search-field-group">
+                    <label for="destination">
+                        <span>Final Destination</span>
+                        <span style="font-size: 11px; color: var(--text-muted);">Mysuru &amp; Surrounds</span>
+                    </label>
+                    <div class="search-input-wrapper">
+                        <span class="search-input-icon">🏁</span>
+                        <input type="text" id="destination" list="mysoreLandmarks" placeholder="e.g. K.R. Hospital, Infosys, Chamundi Hill..." autocomplete="off">
+                    </div>
+                </div>
 
-            <button type="button" onclick="submitReport()">
-                Submit Report
-            </button>
-        </section>
+                <div class="route-actions-row">
+                    <button type="button" class="btn-primary-find" onclick="findRoute()">
+                        <span>🗺️</span> Calculate &amp; Display Route
+                    </button>
+                    <button type="button" class="btn-swap-locations" onclick="swapLocations()" title="Swap start and destination">
+                        ⇅
+                    </button>
+                </div>
 
+                <!-- Mysore Quick Landmark Chips for 1-Click Entry -->
+                <div class="quick-chips-wrapper">
+                    <span class="quick-chips-title">Popular Mysuru Landmarks:</span>
+                    <div class="chips-container">
+                        <button type="button" class="chip-btn" onclick="selectQuickLandmark('Mysore Palace')">🏰 Mysore Palace</button>
+                        <button type="button" class="chip-btn" onclick="selectQuickLandmark('K.R. Hospital')">🏥 K.R. Hospital</button>
+                        <button type="button" class="chip-btn" onclick="selectQuickLandmark('Mysore Railway Station')">🚆 Railway Station</button>
+                        <button type="button" class="chip-btn" onclick="selectQuickLandmark('Chamundi Hill')">🛕 Chamundi Hill</button>
+                        <button type="button" class="chip-btn" onclick="selectQuickLandmark('Suburban Bus Stand')">🚌 Bus Stand</button>
+                        <button type="button" class="chip-btn" onclick="selectQuickLandmark('Infosys Mysore Campus')">💻 Infosys</button>
+                        <button type="button" class="chip-btn" onclick="selectQuickLandmark('Outer Ring Road')">🛣️ Ring Road</button>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Route Summary Display (Appears when route is calculated) -->
+                <div id="routeSummaryPanel" class="route-summary-panel">
+                    <div class="summary-header">
+                        <h3><span>📍</span> Route Navigation Summary</h3>
+                        <button type="button" class="summary-close-btn" onclick="clearActiveRoute()" title="Clear route">✕</button>
+                    </div>
+                    
+                    <div class="summary-endpoints">
+                        <div class="endpoint-row">
+                            <span class="endpoint-badge badge-start">START</span>
+                            <strong id="summaryStartText">Mysore Palace</strong>
+                        </div>
+                        <div class="endpoint-row">
+                            <span class="endpoint-badge badge-dest">END</span>
+                            <strong id="summaryDestText">K.R. Hospital</strong>
+                        </div>
+                    </div>
+
+                    <div class="summary-metrics-grid">
+                        <div class="metric-box">
+                            <span>Distance</span>
+                            <strong id="summaryDistance">4.8 km</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span>Travel Time</span>
+                            <strong id="summaryTime">12 mins</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span>Traffic</span>
+                            <strong id="summaryTraffic" style="color: #34d399;">Low</strong>
+                        </div>
+                    </div>
+
+                    <div id="summarySafetyNotice" class="summary-safety-notice">
+                        <span>ℹ️</span>
+                        <span id="summarySafetyText">Optimal path selected via Sayyaji Rao Road. No active delays.</span>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button type="button" class="btn-sm-action" style="flex: 1;" onclick="zoomToActiveRoute()">
+                            🔍 Zoom to Route
+                        </button>
+                        <button type="button" class="btn-sm-action" style="flex: 1;" onclick="clearActiveRoute()">
+                            🔄 Reset
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Traffic Prediction Section -->
+            <section class="prediction-section">
+                <h2><span>🤖</span> AI Traffic Predictor</h2>
+                <div class="prediction-card-grid">
+                    <div class="pred-box">
+                        <h3>Selected Road</h3>
+                        <p id="currentRoad" style="color: #38bdf8;">Sayyaji Rao Road</p>
+                    </div>
+                    <div class="pred-box">
+                        <h3>Condition</h3>
+                        <p id="predictedTraffic" class="moderate-text">🟡 Moderate</p>
+                    </div>
+                    <div class="pred-box">
+                        <h3>Avg Speed</h3>
+                        <p id="estimatedSpeed" style="color: #34d399;">28 km/h</p>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary-find" style="width: 100%; padding: 10px;" onclick="predictTraffic()">
+                    ⚡ Predict Live Traffic with AI
+                </button>
+                <p id="mlPredictionMessage" style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;"></p>
+                <p id="mlPredictionTime" style="font-size: 11px; color: var(--text-muted);"></p>
+            </section>
+
+            <!-- Community Traffic Reporting -->
+            <section class="report-section" id="reports-section">
+                <h2><span>📢</span> Report Road Condition</h2>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">
+                    Assist fellow Mysuru commuters by reporting traffic jams, accidents, or waterlogging.
+                </p>
+
+                <div class="form-group">
+                    <label for="reportRoad">Road Name in Mysuru</label>
+                    <input type="text" id="reportRoad" list="mysoreRoadsList" placeholder="e.g. JLB Road, KRS Road..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reportCondition">Traffic Condition</label>
+                    <select id="reportCondition">
+                        <option value="Low">🟢 Low Traffic (Clear flow)</option>
+                        <option value="Moderate" selected>🟡 Moderate Congestion</option>
+                        <option value="Heavy">🔴 Heavy Gridlock</option>
+                        <option value="Accident">💥 Accident / Breakdown</option>
+                        <option value="Road Block">🚧 Road Closure / Work</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="reportDescription">Description &amp; Landmark</label>
+                    <textarea id="reportDescription" placeholder="Provide details (e.g. Near Ramaswamy Circle signal)..." maxlength="250"></textarea>
+                </div>
+
+                <button type="button" class="btn-submit-report" onclick="submitReport()">
+                    📤 Submit Citizen Report
+                </button>
+
+                <h3 style="font-size: 14px; font-weight: 700; margin: 20px 0 10px;">Recent Community Reports</h3>
+                <div id="reports-container">
+                    <p style="font-size: 13px; color: var(--text-muted);">Loading community reports...</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- RIGHT COLUMN: Mysore Interactive Map, Emergency Alerts & Police Checkpoints -->
+        <div class="main-col">
+            
+            <!-- Mysore Leaflet + OpenStreetMap Container -->
+            <section class="map-section" id="map-section">
+                <div class="map-header-row">
+                    <div class="map-header-title">
+                        <h2><span>🗺️</span> Mysuru Live Traffic &amp; Navigation Map</h2>
+                        <span class="map-city-tag">Leaflet + OpenStreetMap engine strictly focused on Mysore, Karnataka</span>
+                    </div>
+                    <div class="map-actions">
+                        <button type="button" class="map-tool-btn" onclick="resetMysoreView()" title="Center on Mysore City">
+                            🔄 Center Mysuru
+                        </button>
+                        <button type="button" class="map-tool-btn" onclick="locateUserOnMap()" title="Center on GPS coordinates">
+                            📍 My Position
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Layer Filter Toolbar -->
+                <div class="map-layer-toolbar">
+                    <span class="layer-toolbar-title">Layers:</span>
+                    <div class="layer-pills">
+                        <button type="button" class="layer-pill active" id="pill-all" onclick="toggleMapFilter('all')">
+                            🌐 All Layers
+                        </button>
+                        <button type="button" class="layer-pill layer-pill-ambulance" id="pill-ambulance" onclick="toggleMapFilter('ambulance')">
+                            🚑 Ambulance Corridors (<span id="pillAmbulanceCount">1</span>)
+                        </button>
+                        <button type="button" class="layer-pill layer-pill-police" id="pill-police" onclick="toggleMapFilter('police')">
+                            👮 Police Checkpoints (<span id="pillPoliceCount">3</span>)
+                        </button>
+                        <button type="button" class="layer-pill" id="pill-routes" onclick="toggleMapFilter('routes')">
+                            🛣️ Smart Routes
+                        </button>
+                        <button type="button" class="layer-pill" id="pill-hazards" onclick="toggleMapFilter('hazards')">
+                            ⚠️ Hazards
+                        </button>
+                        <button type="button" class="layer-pill" id="pill-landmarks" onclick="toggleMapFilter('landmarks')">
+                            📍 Mysore Landmarks
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Leaflet Map Canvas -->
+                <div class="map-wrapper">
+                    <div id="map"></div>
+                </div>
+
+                <!-- Map Legend -->
+                <div class="map-legend">
+                    <div class="legend-badges">
+                        <span class="legend-badge legend-badge-start">🚩 Start Location</span>
+                        <span class="legend-badge legend-badge-dest">🏁 Destination</span>
+                        <span class="legend-badge legend-badge-ambulance">🚑 Emergency Ambulance (Pulsing Siren)</span>
+                        <span class="legend-badge legend-badge-police">👮 Police Checkpoint</span>
+                    </div>
+                    <span class="legend-hint">💡 Tip: Click anywhere on the Mysore map to set Start or Destination!</span>
+                </div>
+            </section>
+
+            <!-- 1. Dedicated Emergency Ambulance Siren & Corridor Panel -->
+            <section class="ambulance-panel" id="ambulance-section">
+                <div class="panel-header-row">
+                    <div>
+                        <h2><span>🚑</span> Emergency Ambulance Siren &amp; Transit Alerts</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary);">
+                            Real-time tracking of active emergency medical vehicles in Mysuru. <strong>Always give way safely!</strong>
+                        </p>
+                    </div>
+                    <button type="button" class="btn-trigger-action" onclick="openAmbulanceDispatchModal()">
+                        🚨 Dispatch Emergency 108
+                    </button>
+                </div>
+
+                <div id="ambulanceAlertsContainer">
+                    <p style="font-size: 13px; color: var(--text-muted);">Loading emergency ambulance alerts...</p>
+                </div>
+            </section>
+
+            <!-- 2. Dedicated Police Checking & Checkpoint Alerts Panel -->
+            <section class="police-panel" id="police-section">
+                <div class="panel-header-row">
+                    <div>
+                        <h2><span>👮</span> Mysuru Police Checking &amp; Checkpoint Alerts</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary);">
+                            Authorized traffic police checkpoint reports, helmet/seatbelt checks, speed radars &amp; security inspections. Alerts automatically expire after validity.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-trigger-police" onclick="openPoliceCheckpointModal()">
+                        👮 Report Checkpoint
+                    </button>
+                </div>
+
+                <div id="policeCheckpointsContainer">
+                    <p style="font-size: 13px; color: var(--text-muted);">Loading police checkpoint alerts...</p>
+                </div>
+            </section>
+
+            <!-- Smart Mysore Routes Recommendation Section -->
+            <section class="routes-panel" id="routes-section">
+                <h2><span>🛣️</span> Recommended Mysuru Travel Corridors</h2>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Pre-computed optimal arterial routes across Mysuru based on live road conditions.
+                </p>
+                <div class="routes-grid" id="routes-container">
+                    <p style="font-size: 13px; color: var(--text-muted);">Loading smart routes...</p>
+                </div>
+            </section>
+        </div>
     </main>
 
-    <!-- Login -->
-    <section class="login-section" id="login-section">
-        <h2>TraffIQ Login</h2>
-
-        <p class="login-description">
-            Login to access your TraffIQ account.
-        </p>
-
-        <label for="loginEmail">Email</label>
-        <input type="email" id="loginEmail"
-               placeholder="Enter your email">
-
-        <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword"
-               placeholder="Enter your password">
-
-        <p id="loginMessage"></p>
-
-        <button type="button" onclick="loginUser()">Login</button>
-    </section>
-    <!-- User Registration Section -->
-<section class="login-section" id="register-section">
-    <h2>Create TraffIQ Account</h2>
-
-    <p class="login-description">
-        Register to access TraffIQ features.
-    </p>
-
-    <label for="registerName">Full Name</label>
-    <input
-        type="text"
-        id="registerName"
-        placeholder="Enter your full name"
-    >
-
-    <label for="registerEmail">Email</label>
-    <input
-        type="email"
-        id="registerEmail"
-        placeholder="Enter your email"
-    >
-
-    <label for="registerPassword">Password</label>
-    <input
-        type="password"
-        id="registerPassword"
-        placeholder="Create a password (minimum 8 characters)"
-    >
-
-    <p id="registerMessage"></p>
-
-    <button type="button" onclick="registerUser()">
-        Register
-    </button>
-</section>
-
-
-    <!-- User Dashboard -->
-    <section class="dashboard-section" id="user-dashboard" style="display: none;">
-        <h2>User Dashboard</h2>
-        <div class="user-reports-section">
-    <h3>My Traffic Reports</h3>
-
-    <button type="button" onclick="loadMyReports()">
-        🔄 Refresh My Reports
-    </button>
-
-    <div id="myReportsContainer">
-        <p>Log in to view your submitted reports.</p>
+    <!-- ======================================================================
+         MODAL 1: Dispatch Emergency Ambulance (Authorized)
+         ====================================================================== -->
+    <div id="modalDispatchAmbulance" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><span>🚨</span> Activate Emergency Ambulance Siren &amp; Alert</h3>
+                <button type="button" class="modal-close" onclick="closeModal('modalDispatchAmbulance')">✕</button>
+            </div>
+            <form id="formDispatchAmbulance" onsubmit="handleDispatchAmbulance(event)">
+                <div class="form-group">
+                    <label for="ambCallsign">Ambulance Call Sign / Vehicle No.</label>
+                    <input type="text" id="ambCallsign" value="KA-09-EM-108" required>
+                </div>
+                <div class="form-group">
+                    <label for="ambDriver">Paramedic / Driver Name</label>
+                    <input type="text" id="ambDriver" value="Paramedic Rajesh Kumar (EMS 108)" required>
+                </div>
+                <div class="form-group">
+                    <label for="ambStartLoc">Current Location in Mysuru</label>
+                    <input type="text" id="ambStartLoc" list="mysoreLandmarks" value="Outer Ring Road - Hebbal Junction" required>
+                </div>
+                <div class="form-group">
+                    <label for="ambHospital">Destination Hospital</label>
+                    <select id="ambHospital">
+                        <option value="K.R. Hospital (City Central)" selected>🏥 K.R. Hospital (Government Medical College &amp; Trauma Care)</option>
+                        <option value="Apollo BGS Hospital, Kuvempunagar">🏥 Apollo BGS Hospital, Kuvempunagar</option>
+                        <option value="Columbia Asia / Manipal Hospital, Bengaluru Highway">🏥 Manipal (Columbia Asia) Hospital, NH 275</option>
+                        <option value="Cauvery Heart & Multi-Speciality Hospital">🏥 Cauvery Heart &amp; Multi-Speciality Hospital, Siddartha Layout</option>
+                        <option value="JSS Hospital, MG Road">🏥 JSS Hospital, MG Road</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ambDirection">Direction of Travel</label>
+                    <input type="text" id="ambDirection" value="Southbound along KRS Road towards K.R. Hospital" required>
+                </div>
+                <div class="form-group">
+                    <label for="ambRoads">Affected Corridors (Comma-separated)</label>
+                    <input type="text" id="ambRoads" value="KRS Road, Sayyaji Rao Road, Irwin Road" required>
+                </div>
+                <div class="form-group">
+                    <label for="ambPriority">Emergency Priority</label>
+                    <select id="ambPriority">
+                        <option value="Critical" selected>🔴 Critical - Code Red (Life Threatening)</option>
+                        <option value="High">🟡 High - Code Yellow (Urgent Transit)</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modalDispatchAmbulance')">Cancel</button>
+                    <button type="submit" class="btn-primary-find" style="background: #dc2626;">
+                        🚨 Broadcast Siren &amp; Corridor
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-        <p id="dashboardWelcome"></p>
-        <button type="button" onclick="logoutUser()">Logout</button>
 
-
-        <div class="dashboard-cards">
-            <div class="dashboard-card">
-                <h3>📍 Current Location</h3>
-                <p id="dashboardLocation">Location not detected</p>
+    <!-- ======================================================================
+         MODAL 2: Report Police Checkpoint (Authorized)
+         ====================================================================== -->
+    <div id="modalReportCheckpoint" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><span>👮</span> Report Mysuru Police Checkpoint</h3>
+                <button type="button" class="modal-close" onclick="closeModal('modalReportCheckpoint')">✕</button>
             </div>
+            <form id="formReportCheckpoint" onsubmit="handleReportCheckpoint(event)">
+                <div class="form-group">
+                    <label for="cpRoad">Road Name in Mysuru</label>
+                    <input type="text" id="cpRoad" list="mysoreRoadsList" placeholder="e.g. Sayyaji Rao Road" required>
+                </div>
+                <div class="form-group">
+                    <label for="cpLandmark">Specific Landmark / Junction</label>
+                    <input type="text" id="cpLandmark" placeholder="e.g. Near Hardinge Circle / Opp. University Gate" required>
+                </div>
+                <div class="form-group">
+                    <label for="cpType">Checking Purpose / Enforcement Type</label>
+                    <select id="cpType">
+                        <option value="Helmet & Seatbelt Inspection" selected>🪖 Helmet &amp; Seatbelt Inspection</option>
+                        <option value="Drink & Drive (Alcometer Checking)">🍷 Drink &amp; Drive (Alcometer Inspection)</option>
+                        <option value="Speed Radar Interceptor">⚡ Speed Radar Interceptor</option>
+                        <option value="Document & Insurance Verification">📄 Document &amp; DL Verification</option>
+                        <option value="Security & Night Patrol">🛡️ Security &amp; Night Checkpost</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cpDuration">Alert Validity Period (Auto-Expires)</label>
+                    <select id="cpDuration">
+                        <option value="1">1 Hour</option>
+                        <option value="2">2 Hours</option>
+                        <option value="3" selected>3 Hours (Standard)</option>
+                        <option value="4">4 Hours</option>
+                        <option value="8">8 Hours (Full Shift)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cpOfficer">Reporting Authority</label>
+                    <input type="text" id="cpOfficer" value="Mysuru City Traffic Police - Devaraja Station" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal('modalReportCheckpoint')">Cancel</button>
+                    <button type="submit" class="btn-primary-find" style="background: #2563eb;">
+                        👮 Deploy Checkpoint Alert
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-            <div class="dashboard-card">
-                <h3>🚗 Traffic Status</h3>
-                <p id="dashboardTraffic">🟡 Moderate Traffic</p>
+    <!-- ======================================================================
+         MODAL 3: User Auth / Login Modal
+         ====================================================================== -->
+    <div id="modalAuth" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><span>🔐</span> TraffIQ Mysuru Authentication</h3>
+                <button type="button" class="modal-close" onclick="closeModal('modalAuth')">✕</button>
             </div>
-
-            <div class="dashboard-card">
-                <h3>🛣️ Route Status</h3>
-                <p id="dashboardRoute">No route selected</p>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>📢 Reports</h3>
-                <p id="dashboardReports">0 Reports Submitted</p>
+            <div>
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="admin@traffiq.com or citizen@mysuru.in">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                </div>
+                <p id="loginMessage" style="font-size: 13px; margin-bottom: 12px;"></p>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn-primary-find" style="flex: 1;" onclick="loginUser()">
+                        Sign In
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="demoLoginAdmin()">
+                        Demo Admin
+                    </button>
+                </div>
             </div>
         </div>
-    </section>
-
-    <!-- Admin Dashboard -->
-    <section class="admin-section" id="admin-dashboard" style="display: none;">
-        <h2>Admin Dashboard</h2>
-        <button type="button" onclick="logoutUser()">Logout</button>
-
-        <div class="admin-cards">
-            <div class="admin-card">
-                <h3>🚗 Traffic Reports</h3>
-                <p id="adminTrafficReports">12</p>
-                <span>Demo count</span>
-            </div>
-            <div class="admin-reports-section">
-    <h3>Recent Community Traffic Reports</h3>
-    <div class="report-summary-cards">
-
-    <div class="summary-card pending-summary">
-        <h4>Pending Reports</h4>
-        <p id="pendingReportCount">0</p>
     </div>
 
-    <div class="summary-card reviewed-summary">
-        <h4>Reviewed Reports</h4>
-        <p id="reviewedReportCount">0</p>
-    </div>
+    <!-- Mysore Datalists for Autocomplete & Accurate Pinpoint Resolution -->
+    <datalist id="mysoreLandmarks">
+        <option value="Mysore Palace">
+        <option value="K.R. Hospital">
+        <option value="Suburban Bus Stand">
+        <option value="City Bus Stand">
+        <option value="Mysore Railway Station">
+        <option value="Chamundi Hill Temple">
+        <option value="Apollo BGS Hospital, Kuvempunagar">
+        <option value="Manipal Hospital (Columbia Asia), NH 275">
+        <option value="Infosys Mysore Campus, Hebbal">
+        <option value="University of Mysore (Manasagangotri)">
+        <option value="St. Philomena's Cathedral">
+        <option value="Mysore Zoo (Sri Chamarajendra Zoological Gardens)">
+        <option value="Hardinge Circle (Jayachamaraja Wadiyar Circle)">
+        <option value="Ramaswamy Circle">
+        <option value="Ballal Circle">
+        <option value="Kuvempunagar Double Road">
+        <option value="Saraswathipuram">
+        <option value="Gokulam 3rd Stage">
+        <option value="Vijayanagar 2nd Stage">
+        <option value="Hebbal Industrial Area">
+        <option value="Outer Ring Road - Bogadi">
+        <option value="Outer Ring Road - Hebbal">
+        <option value="Outer Ring Road - Bannur Road">
+        <option value="Lalitha Mahal Palace">
+        <option value="D. Devaraj Urs Road">
+        <option value="Sayyaji Rao Road">
+        <option value="JLB Road">
+        <option value="KRS Road">
+        <option value="Hunsur Road">
+        <option value="Bengaluru-Mysuru Highway (NH 275)">
+    </datalist>
 
-    <div class="summary-card resolved-summary">
-        <h4>Resolved Reports</h4>
-        <p id="resolvedReportCount">0</p>
-    </div>
+    <datalist id="mysoreRoadsList">
+        <option value="Sayyaji Rao Road">
+        <option value="Outer Ring Road (ORR Mysuru)">
+        <option value="JLB Road (Jhansi Lakshmibai)">
+        <option value="Bengaluru-Mysuru Highway (NH 275)">
+        <option value="KRS Road (KR Hospital Corridor)">
+        <option value="Hunsur Road (University Route)">
+        <option value="Chamundi Hill Road">
+        <option value="D. Devaraj Urs Road">
+        <option value="Vishwamanava Double Road">
+        <option value="Station Road / Irwin Road">
+        <option value="Bogadi Road">
+        <option value="Bannur Road">
+        <option value="Nanjangud Road / Ooty Road (NH 766)">
+    </datalist>
 
-</div>
-    <div class="admin-report-filters">
-
-    <input
-        type="text"
-        id="reportSearch"
-        placeholder="Search by road name..."
-        oninput="filterAdminReports()"
-    >
-
-    <select id="reportStatusFilter" onchange="filterAdminReports()">
-        <option value="All">All Statuses</option>
-        <option value="Pending">Pending</option>
-        <option value="Reviewed">Reviewed</option>
-        <option value="Resolved">Resolved</option>
-    </select>
-
-</div>
-    <button type="button" onclick="loadAdminReports()">
-    🔄 Refresh Reports
-</button>
-
-    <div id="adminReportsContainer">
-        <p>Loading reports...</p>
-    </div>
-</div>
-
-
-            <div class="admin-card">
-                <h3>🚧 Road Incidents</h3>
-                <p id="adminIncidents">4</p>
-                <span>Demo count</span>
-            </div>
-
-            <div class="admin-card">
-                <h3>🚑 Emergency Alerts</h3>
-                <p id="adminEmergency">2</p>
-                <span>Demo count</span>
-            </div>
-
-            <div class="admin-card">
-                <h3>🛣️ Roads Monitored</h3>
-                <p id="adminRoads">25</p>
-                <span>Demo count</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Traffic Statistics -->
-    <section class="statistics-section">
-        <h2>Traffic Statistics</h2>
-
-        <p class="statistics-description">
-            Overview of current traffic conditions on monitored roads.
-        </p>
-
-        <div class="statistics-cards">
-            <div class="stat-card">
-                <h3>🟢 Low Traffic</h3>
-                <p>8 Roads</p>
-            </div>
-
-            <div class="stat-card">
-                <h3>🟡 Moderate Traffic</h3>
-                <p>11 Roads</p>
-            </div>
-
-            <div class="stat-card">
-                <h3>🔴 High Traffic</h3>
-                <p>6 Roads</p>
-            </div>
-        </div>
-    </section>
-
+    <!-- Footer -->
     <footer>
-        <p>TraffIQ © 2026</p>
+        <p>
+            <strong>TraffIQ Mysuru</strong> &copy; 2026 &bull; Intelligent Traffic &amp; Emergency Vehicle Management System.
+            Dedicated to Mysuru City, Karnataka.
+        </p>
     </footer>
 
-    <!-- Leaflet JS (OpenStreetMap, No API Key Required) -->
+    <!-- Leaflet JS Library (OpenStreetMap, Zero API Keys Required) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="script.js"></script>
 </body>
