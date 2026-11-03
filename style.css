@@ -1,0 +1,1544 @@
+/* ==========================================================================
+   TraffIQ - Smart Traffic Intelligence & Emergency Management (Mysuru, KA)
+   Modern, Sleek, User-Friendly Dashboard Theme
+   ========================================================================== */
+
+:root {
+    --bg-main: #0b0f19;
+    --bg-card: #131b2e;
+    --bg-card-hover: #1a253e;
+    --bg-card-translucent: rgba(19, 27, 46, 0.85);
+    --border-color: #23314f;
+    --border-glow: rgba(59, 130, 246, 0.3);
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-glow: rgba(37, 99, 235, 0.35);
+    
+    --accent-cyan: #06b6d4;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --accent-indigo: #6366f1;
+    --accent-police: #3b82f6;
+    
+    --low-traffic: #10b981;
+    --moderate-traffic: #f59e0b;
+    --high-traffic: #ef4444;
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    
+    --shadow-card: 0 8px 24px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.25);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   Emergency Siren Audio & Strobe Banner (High Priority)
+   ========================================================================== */
+#emergencySirenBanner {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    background: linear-gradient(90deg, #b91c1c 0%, #7f1d1d 50%, #1e3a8a 100%);
+    background-size: 200% 200%;
+    animation: strobeGradient 2s ease infinite;
+    color: #ffffff;
+    padding: 14px 20px;
+    box-shadow: 0 4px 25px rgba(220, 38, 38, 0.6);
+    border-bottom: 2px solid #ef4444;
+}
+
+@keyframes strobeGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.siren-banner-content {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.siren-badge-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.siren-beacon-icon {
+    font-size: 28px;
+    animation: beaconPulse 0.8s infinite alternate;
+}
+
+@keyframes beaconPulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 4px #fff); }
+    100% { transform: scale(1.25); filter: drop-shadow(0 0 16px #ff0055); }
+}
+
+.siren-text-col h3 {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.siren-text-col p {
+    font-size: 13px;
+    color: #fecaca;
+    margin-top: 2px;
+}
+
+.siren-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.siren-btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.siren-btn-track {
+    background: #ffffff;
+    color: #991b1b;
+}
+.siren-btn-track:hover {
+    background: #fee2e2;
+}
+
+.siren-btn-mute {
+    background: rgba(0, 0, 0, 0.4);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.siren-btn-mute:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.siren-btn-deactivate {
+    background: #111827;
+    color: #f87171;
+    border: 1px solid #f87171;
+}
+.siren-btn-deactivate:hover {
+    background: #f87171;
+    color: #111827;
+}
+
+/* ==========================================================================
+   Navigation Bar & City / Role Header
+   ========================================================================== */
+.navbar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    padding: 14px 4%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(12px);
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.logo-icon {
+    font-size: 26px;
+    background: rgba(37, 99, 235, 0.15);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.brand-title-group h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-badge-city {
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+}
+
+.brand-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--transition);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Role Switcher Pill Bar */
+.role-switcher-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(11, 15, 25, 0.7);
+    border: 1px solid var(--border-color);
+    padding: 4px 8px;
+    border-radius: var(--radius-full);
+}
+
+.role-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    padding-left: 6px;
+}
+
+.role-select {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    padding: 4px 8px;
+}
+
+.role-select option {
+    background: #111827;
+    color: #ffffff;
+}
+
+.nav-quick-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-nav-emergency {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: #ffffff;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(220, 38, 38, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+}
+.btn-nav-emergency:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 18px rgba(220, 38, 38, 0.6);
+}
+
+.btn-nav-police {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(37, 99, 235, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+}
+.btn-nav-police:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 18px rgba(37, 99, 235, 0.6);
+}
+
+.btn-nav-login {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-nav-login:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================================================
+   Hero & Key Metrics Strip
+   ========================================================================== */
+.hero-stats-strip {
+    max-width: 1400px;
+    margin: 20px auto 0;
+    padding: 0 4%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.hero-stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-card);
+    transition: var(--transition);
+}
+.hero-stat-card:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+.hero-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.icon-ambulance {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.icon-police {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.icon-routes {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.icon-traffic {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.hero-stat-info h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hero-stat-info .stat-number {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.hero-stat-info .stat-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Main Application Layout (Two Columns / Responsive Grid)
+   ========================================================================== */
+main {
+    max-width: 1400px;
+    margin: 24px auto 60px;
+    padding: 0 4%;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 1080px) {
+    main {
+        grid-template-columns: 1fr;
+    }
+    .hero-stats-strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .hero-stats-strip {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Card Sections */
+section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
+    transition: var(--transition);
+}
+
+section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+/* Left Sidebar: Controls & Planner */
+.sidebar-col {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Main Map Column */
+.main-col {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================================================
+   Find Route Box (Mysore Focused with Manual Input)
+   ========================================================================== */
+.search-box {
+    border-top: 3px solid var(--accent-cyan);
+}
+
+.search-field-group {
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.search-field-group label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-icon {
+    position: absolute;
+    left: 12px;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.search-box input[type="text"] {
+    width: 100%;
+    padding: 12px 14px 12px 40px;
+    background: rgba(11, 15, 25, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+    transition: var(--transition);
+}
+
+.search-box input[type="text"]:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+}
+
+.search-quick-btn {
+    background: rgba(37, 99, 235, 0.15);
+    border: 1px solid rgba(37, 99, 235, 0.3);
+    color: #93c5fd;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+.search-quick-btn:hover {
+    background: rgba(37, 99, 235, 0.3);
+    color: #ffffff;
+}
+
+.route-actions-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.btn-primary-find {
+    flex: 2;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition);
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+.btn-primary-find:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(2, 132, 199, 0.5);
+}
+
+.btn-swap-locations {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+}
+.btn-swap-locations:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Mysore Quick Landmark Chips */
+.quick-chips-wrapper {
+    margin-top: 14px;
+}
+
+.quick-chips-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.chip-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.chip-btn:hover {
+    background: rgba(6, 182, 212, 0.15);
+    border-color: rgba(6, 182, 212, 0.4);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Selected Route Navigation Summary Card (Display on Search)
+   ========================================================================== */
+.route-summary-panel {
+    display: none;
+    margin-top: 18px;
+    background: rgba(11, 15, 25, 0.95);
+    border: 1px solid var(--accent-cyan);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.summary-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.summary-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+}
+.summary-close-btn:hover {
+    color: #ffffff;
+}
+
+.summary-endpoints {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.endpoint-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.endpoint-badge {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.badge-start {
+    background: #059669;
+    color: #ffffff;
+}
+
+.badge-dest {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.summary-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.metric-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    text-align: center;
+}
+
+.metric-box span {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: block;
+    text-transform: uppercase;
+}
+
+.metric-box strong {
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.summary-safety-notice {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #fde68a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ==========================================================================
+   Leaflet Map (Mysore, Karnataka Focus)
+   ========================================================================== */
+.map-section {
+    padding: 20px;
+    border-top: 3px solid var(--primary);
+}
+
+.map-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.map-header-title h2 {
+    margin-bottom: 4px;
+}
+
+.map-city-tag {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.map-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.map-tool-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+}
+.map-tool-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Map Layer Filter Toolbar */
+.map-layer-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    background: rgba(11, 15, 25, 0.6);
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.layer-toolbar-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.layer-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.layer-pill {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.layer-pill:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.layer-pill.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.4);
+}
+
+.layer-pill-ambulance.active {
+    background: #dc2626;
+    border-color: #dc2626;
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.4);
+}
+
+.layer-pill-police.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.4);
+}
+
+/* Map Container */
+.map-wrapper {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background: #111827;
+}
+
+#map {
+    width: 100%;
+    height: 520px;
+    background: #1e293b;
+    z-index: 10;
+}
+
+/* Custom Leaflet Map Markers */
+.custom-leaflet-div {
+    background: transparent;
+    border: none;
+}
+
+.custom-marker-pin {
+    width: 36px;
+    height: 36px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.custom-marker-inner {
+    transform: rotate(45deg);
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Specific Marker Styles */
+.pin-start-flag {
+    background: #10b981;
+    border: 2px solid #ffffff;
+}
+
+.pin-dest-flag {
+    background: #ef4444;
+    border: 2px solid #ffffff;
+}
+
+.pin-ambulance-active {
+    background: #dc2626;
+    border: 2px solid #ffffff;
+    animation: ambulancePinPulse 1s infinite alternate;
+}
+
+@keyframes ambulancePinPulse {
+    0% { transform: rotate(-45deg) scale(1); filter: drop-shadow(0 0 4px #ef4444); }
+    100% { transform: rotate(-45deg) scale(1.15); filter: drop-shadow(0 0 14px #ff0055); }
+}
+
+.pin-police {
+    background: #2563eb;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 14px rgba(37, 99, 235, 0.6);
+}
+
+.pin-road {
+    background: #475569;
+    border: 2px solid #94a3b8;
+}
+
+.pin-hazard {
+    background: #f59e0b;
+    border: 2px solid #ffffff;
+}
+
+/* Pulsing GPS Radar Ring */
+.pulse-radar-ring {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: -12px;
+    left: -12px;
+    border-radius: 50%;
+    border: 2px solid rgba(16, 185, 129, 0.8);
+    background: rgba(16, 185, 129, 0.2);
+    animation: radarRipple 2s ease-out infinite;
+    pointer-events: none;
+}
+
+@keyframes radarRipple {
+    0% { transform: scale(0.3); opacity: 1; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Leaflet Popups */
+.leaflet-popup-content-wrapper {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-card) !important;
+    padding: 0 !important;
+}
+
+.leaflet-popup-content {
+    margin: 14px 16px !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+    background: var(--bg-card) !important;
+}
+
+.map-popup-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.map-popup-card p {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin: 4px 0;
+}
+
+.map-popup-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.popup-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    cursor: pointer;
+}
+.popup-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.popup-btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Map Legend */
+.map-legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.legend-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.legend-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-badge-start { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+.legend-badge-dest { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+.legend-badge-ambulance { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid rgba(220, 38, 38, 0.4); }
+.legend-badge-police { background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(37, 99, 235, 0.4); }
+
+.legend-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Dedicated Emergency Ambulance Alerts Panel
+   ========================================================================== */
+.ambulance-panel {
+    border-top: 3px solid var(--accent-rose);
+}
+
+.panel-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.btn-trigger-action {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-trigger-action:hover {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.ambulance-card {
+    background: rgba(11, 15, 25, 0.6);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid #ef4444;
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: var(--transition);
+}
+
+.ambulance-card.active-corridor {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(19, 27, 46, 0.8) 100%);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
+}
+
+.ambulance-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.ambulance-callsign {
+    font-size: 15px;
+    font-weight: 800;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-badge-active {
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    animation: pulseBadge 1.2s infinite alternate;
+}
+
+@keyframes pulseBadge {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; filter: drop-shadow(0 0 6px #ef4444); }
+}
+
+.status-badge-resolved {
+    background: #10b981;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+}
+
+.ambulance-route-path {
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.ambulance-giveway-alert {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px dashed rgba(239, 68, 68, 0.4);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #fecaca;
+    font-weight: 600;
+    margin: 8px 0;
+}
+
+.ambulance-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Dedicated Police Checkpoint Alerts Panel
+   ========================================================================== */
+.police-panel {
+    border-top: 3px solid var(--accent-police);
+}
+
+.btn-trigger-police {
+    background: rgba(37, 99, 235, 0.15);
+    border: 1px solid rgba(37, 99, 235, 0.4);
+    color: #93c5fd;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-trigger-police:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.police-card {
+    background: rgba(11, 15, 25, 0.6);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-police);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: var(--transition);
+}
+
+.police-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.police-road-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.check-type-badge {
+    background: rgba(37, 99, 235, 0.2);
+    border: 1px solid rgba(37, 99, 235, 0.4);
+    color: #93c5fd;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+}
+
+.police-landmark {
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.police-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.expiry-countdown {
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+.police-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-sm-action {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+.btn-sm-action:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ==========================================================================
+   Smart Mysore Routes Section
+   ========================================================================== */
+.routes-panel {
+    border-top: 3px solid var(--accent-emerald);
+}
+
+.routes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 640px) {
+    .routes-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.smart-route-card {
+    background: rgba(11, 15, 25, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.smart-route-card:hover {
+    border-color: rgba(16, 185, 129, 0.5);
+    transform: translateY(-2px);
+}
+
+.smart-route-card.recommended {
+    border-color: rgba(16, 185, 129, 0.6);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(19, 27, 46, 0.8) 100%);
+}
+
+.smart-route-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.smart-route-road {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.smart-route-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.stat-item {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.stat-item strong {
+    color: #ffffff;
+    font-size: 13px;
+    display: block;
+}
+
+/* ==========================================================================
+   Traffic Prediction Section
+   ========================================================================== */
+.prediction-section {
+    border-top: 3px solid var(--accent-indigo);
+}
+
+.prediction-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.pred-box {
+    background: rgba(11, 15, 25, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+}
+
+.pred-box h3 {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.pred-box p {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+/* ==========================================================================
+   Community Traffic Reports Section
+   ========================================================================== */
+.report-section {
+    border-top: 3px solid var(--accent-amber);
+}
+
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(11, 15, 25, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    transition: var(--transition);
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--accent-amber);
+}
+
+.btn-submit-report {
+    width: 100%;
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    color: #ffffff;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-submit-report:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+}
+
+/* ==========================================================================
+   Modal Dialogs (Ambulance Dispatch & Police Checkpoint Report)
+   ========================================================================== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 540px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.modal-header h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+}
+.modal-close:hover {
+    color: #ffffff;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    padding: 24px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-top: 40px;
+}
+
+footer strong {
+    color: #ffffff;
+}
